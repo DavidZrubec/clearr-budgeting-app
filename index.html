@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Clearr Budgeting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    function _s(msg) {
+      var el = document.getElementById('loading-text');
+      if (el) el.textContent = msg;
+    }
+    _s('Starting…');
+    setTimeout(function(){
+      var el = document.getElementById('loading-screen');
+      if (el) el.classList.add('hidden');
+    }, 4000);
+    window.onerror = function(msg, url, line) {
+      var o = document.createElement('div');
+      o.id = 'js-error-overlay';
+      o.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#fff;font-family:system-ui,sans-serif;padding:32px';
+      o.innerHTML = '<div style="max-width:400px"><p style="color:#e53e3e;font-weight:700;font-size:18px;margin:0 0 8px">JavaScript Error</p><p style="color:#333;font-size:14px;line-height:1.5;margin:0 0 4px">' + msg + '</p><p style="color:#666;font-size:12px">' + (url||'') + ':' + line + '</p></div>';
+      document.body.appendChild(o);
+      return true;
+    };
+    window.addEventListener('unhandledrejection', function(e) {
+      _s('Promise: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)));
+    });
+    setTimeout(function(){ _s('Loading scripts…'); }, 200);
+    setTimeout(function(){
+      if (window.__scriptLoaded) _s('App running');
+      else _s('Warning: app.js not loaded');
+    }, 2000);
+    setTimeout(function(){
+      if (window.supabase) _s('Supabase ready');
+      else if (window.__scriptLoaded) _s('Supabase missing');
+    }, 3500);
+  </script>
+</head>
+<body>
+  <div class="app" id="app">
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading-screen">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading...</div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <main class="screen" id="welcome-screen">
+      <div class="welcome-wrap">
+        <div class="welcome-anim" id="welcome-anim">
+          <!-- Scene 0: Honest truth -->
+          <div class="scene" data-scene="0">
+            <div class="t-card" style="--c:var(--welcome-clay);--d:0s"></div>
+            <div class="t-card" style="--c:var(--welcome-sage);--d:.2s"></div>
+            <div class="t-card" style="--c:var(--welcome-text);--d:.4s"></div>
+          </div>
+          <!-- Scene 1: Ledger lines -->
+          <div class="scene" data-scene="1">
+            <div class="ledger-bg"></div>
+            <div class="l-line" style="--i:0"></div>
+            <div class="l-line" style="--i:1"></div>
+            <div class="l-line" style="--i:2"></div>
+            <div class="l-line" style="--i:3"></div>
+            <div class="l-circle" style="--i:0"></div>
+            <div class="l-circle" style="--i:1"></div>
+            <div class="l-circle" style="--i:2"></div>
+          </div>
+          <!-- Scene 2: Money stacks -->
+          <div class="scene" data-scene="2">
+            <div class="bar" style="--h:60;--d:0s"></div>
+            <div class="bar" style="--h:85;--d:.1s"></div>
+            <div class="bar" style="--h:50;--d:.2s"></div>
+            <div class="bar" style="--h:95;--d:.3s"></div>
+            <div class="bar" style="--h:70;--d:.4s"></div>
+          </div>
+          <!-- Scene 3: Pulse rings -->
+          <div class="scene" data-scene="3">
+            <div class="pulse-ring" style="--d:0s"></div>
+            <div class="pulse-ring" style="--d:.8s"></div>
+            <div class="pulse-ring" style="--d:1.6s"></div>
+          </div>
+          <!-- Scene 4: Checkmark -->
+          <div class="scene" data-scene="4">
+            <svg class="check-svg" viewBox="0 0 60 60">
+              <circle class="check-bg" cx="30" cy="30" r="26" fill="none" stroke="var(--welcome-clay)" stroke-width="2" opacity="0.2"/>
+              <circle class="check-circle" cx="30" cy="30" r="26" fill="none" stroke="var(--welcome-sage)" stroke-width="3" stroke-dasharray="163" stroke-dashoffset="163" stroke-linecap="round"/>
+              <polyline class="check-mark" points="18,30 26,40 42,20" fill="none" stroke="var(--welcome-text)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="40" stroke-dashoffset="40"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="welcome-slider" id="welcome-slider">
+          <div class="welcome-slide" data-card="0">
+            <h1 class="welcome-headline">Finances filtered.<br>No sugar added.</h1>
+            <p class="welcome-subhead">Most budgeting apps lie to you. They make you feel good for a week, then you're back to square one. Clearr tells you the truth — even when it stings.</p>
+          </div>
+
+          <div class="welcome-slide" data-card="1">
+            <h1 class="welcome-headline">Real talk,<br>real results.</h1>
+            <p class="welcome-subhead">No complicated categories. No sync that breaks every month. Just a dead-simple tracker that respects your time and shows you exactly where your money went.</p>
+          </div>
+
+          <div class="welcome-slide" data-card="2">
+            <h1 class="welcome-headline">Your future self<br>will thank you.</h1>
+            <p class="welcome-subhead">People who track their spending save 15% more in the first month. Not because we're magic — because looking at the numbers changes how you spend.</p>
+          </div>
+
+          <div class="welcome-slide" data-card="3">
+            <h1 class="welcome-headline">Private by design.<br>Your data, your business.</h1>
+            <p class="welcome-subhead">We don't sell your data. We don't track you. No ads, no gimmicks. Just a clean tool that works for you, fully offline-capable.</p>
+          </div>
+
+          <div class="welcome-slide" data-card="4">
+            <h1 class="welcome-headline">One tap away from<br>financial clarity.</h1>
+            <p class="welcome-subhead">No credit card. No commitment. Start seeing where your money actually goes in under 30 seconds. What are you waiting for?</p>
+          </div>
+        </div>
+
+        <div class="welcome-dots" id="welcome-dots">
+          <span class="dot active" data-index="0"></span>
+          <span class="dot" data-index="1"></span>
+          <span class="dot" data-index="2"></span>
+          <span class="dot" data-index="3"></span>
+          <span class="dot" data-index="4"></span>
+        </div>
+
+        <button class="welcome-cta" id="welcome-cta">That's what I need</button>
+      </div>
+    </main>
+
+    <!-- Auth Screen -->
+    <main class="screen" id="auth-screen">
+      <div class="auth-container">
+        <h1 class="auth-title">Clearr</h1>
+        <p class="auth-subtitle">Your finances, simplified.</p>
+        
+        <div class="segmented" id="auth-segment">
+          <button class="active" data-mode="login">Login</button>
+          <button data-mode="signup">Sign Up</button>
+        </div>
+        
+        <form class="auth-form" id="auth-form">
+          <div class="field-stack">
+            <input type="text" id="auth-name" placeholder="Full Name" style="display: none;">
+            <input type="email" id="auth-email" placeholder="Email Address" required>
+            <input type="password" id="auth-password" placeholder="Password" required minlength="8">
+            <input type="password" id="auth-password-confirm" placeholder="Confirm password" required minlength="8" style="display:none">
+            <div id="auth-pw-errors" class="field-errors"></div>
+          </div>
+          <p id="auth-error" class="error-text"></p>
+          <button type="submit" class="primary-btn" id="auth-submit-btn">Login</button>
+          <button type="button" class="google-btn" id="google-signin-btn"><i class="ph ph-google-logo"></i>Sign in with Google</button>
+        </form>
+      </div>
+    </main>
+
+    <!-- Email Verification Screen -->
+    <main class="screen" id="verify-email-screen">
+      <div class="verify-container">
+        <div class="verify-icon"><i class="ph ph-envelope-open"></i></div>
+        <h1 class="verify-heading">Verify your email</h1>
+        <p class="verify-body" id="verify-email-text">We sent a confirmation link to <strong id="verify-email-addr"></strong>. Please check your inbox and click the link.</p>
+        <button class="primary-btn" id="verify-resend-btn">Resend Email</button>
+        <button class="text-btn" id="verify-refresh-btn">I've confirmed — refresh</button>
+      </div>
+    </main>
+
+    <!-- MFA Screen -->
+    <main class="screen" id="mfa-screen">
+      <div class="mfa-container">
+        <div id="mfa-enroll" style="display:none">
+          <h1 class="mfa-heading">Set up two-factor authentication</h1>
+          <p class="mfa-body">Scan this QR code with your authenticator app (Google Authenticator, Authy, or 1Password).</p>
+          <div class="mfa-qr-wrap" id="mfa-qr-wrap"><div class="mfa-qr-placeholder" id="mfa-qr-placeholder">Loading QR code...</div></div>
+          <p class="mfa-body" id="mfa-secret-text"></p>
+          <label class="input-label">Enter the 6-digit code from your app</label>
+          <input type="text" id="mfa-verify-code" class="mfa-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000">
+          <p id="mfa-enroll-error" class="error-text"></p>
+          <button class="primary-btn" id="mfa-verify-enroll-btn">Verify &amp; Activate</button>
+          <div id="mfa-recovery" style="display:none">
+            <p class="mfa-body">Save these recovery codes. Each can be used once if you lose access to your authenticator app.</p>
+            <div class="mfa-recovery-codes" id="mfa-recovery-codes"></div>
+            <button class="primary-btn" id="mfa-recovery-done">I've saved them — continue</button>
+          </div>
+        </div>
+        <div id="mfa-challenge" style="display:none">
+          <h1 class="mfa-heading">Two-factor authentication</h1>
+          <p class="mfa-body">Enter the code from your authenticator app.</p>
+          <input type="text" id="mfa-challenge-code" class="mfa-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000">
+          <p id="mfa-challenge-error" class="error-text"></p>
+          <button class="primary-btn" id="mfa-verify-challenge-btn">Verify</button>
+        </div>
+      </div>
+    </main>
+
+    <main class="screen" id="dashboard-screen">
+      <div class="header-row">
+        <div class="avatar-greeting">
+          <div class="avatar" aria-label="User avatar">DK</div>
+          <p class="greeting" id="greeting-text">Good morning, David.</p>
+        </div>
+        <button class="icon-btn" id="bell-btn" aria-label="Notifications">
+          <i class="ph ph-bell"></i>
+          <span class="badge-dot" id="alerts-badge"></span>
+        </button>
+      </div>
+
+      <section class="hero-card animate-in" style="--delay:0ms">
+        <div class="chart-wrap">
+          <svg id="half-donut" viewBox="0 0 300 180" role="img" aria-label="Budget donut chart"></svg>
+          <div class="donut-center">
+            <p class="label">Remaining</p>
+            <h1 class="hero-amount"></h1>
+            <p class="caption" id="budget-caption"></p>
+          </div>
+        </div>
+        <div class="legend-row" id="legend-row"></div>
+        
+        <div class="hero-divider"></div>
+        
+        <div class="hero-cashflow">
+          <div class="hero-subhead">
+            <span class="label">Cash Flow Ratio</span>
+            <span class="caption" id="hero-cashflow-ratio">Inflow vs Outflow</span>
+          </div>
+          <svg id="hero-cashflow-svg" style="width: 100%; height: 8px; border-radius: 4px; margin-top: 6px;"></svg>
+          <div class="ratio-bar-labels">
+            <span class="income-text" id="hero-inflow-label"></span>
+            <span class="expense-text" id="hero-outflow-label"></span>
+          </div>
+        </div>
+        
+        <div class="hero-allowance">
+          <div class="hero-subhead">
+            <span class="label">Daily Allowance</span>
+            <span class="caption" id="hero-allowance-caption"></span>
+          </div>
+          <svg id="hero-allowance-svg" style="width: 100%; height: 8px; border-radius: 4px; margin-top: 6px; background: var(--color-surface-elevated);"></svg>
+        </div>
+      </section>
+
+      <section class="metrics-row animate-in" style="--delay:30ms">
+        <article class="metric-card">
+          <p class="label">Avg Monthly Spending</p>
+          <h2 id="home-avg-spending">$0.00</h2>
+          <p class="caption" id="home-avg-spending-caption">0 month avg</p>
+        </article>
+        <article class="metric-card">
+          <p class="label">Avg Monthly Net</p>
+          <h2 id="home-avg-net">+$0.00</h2>
+          <p class="caption" id="home-avg-net-caption">0 month avg</p>
+        </article>
+      </section>
+
+      <section class="section animate-in" style="--delay:60ms">
+        <div id="home-budget-rule"></div>
+      </section>
+
+      <section class="section animate-in" style="--delay:90ms">
+        <h3 class="muted-title">Alerts</h3>
+        <div class="alerts-stack" id="alerts-stack"></div>
+      </section>
+    </main>
+
+    <main class="screen" id="transactions-screen">
+      <div class="sticky-head">
+        <div class="title-row">
+          <h1>Transactions</h1>
+          <button class="icon-btn" id="open-filter" aria-label="Open filters"><i class="ph ph-sliders-horizontal"></i></button>
+        </div>
+        <div class="search-wrap" id="search-wrap">
+          <i class="ph ph-magnifying-glass"></i>
+          <input type="text" id="search-input" placeholder="Search transactions…" aria-label="Search transactions">
+          <button id="clear-search" aria-label="Clear search"><i class="ph ph-x"></i></button>
+        </div>
+      </div>
+      <section class="transactions-list" id="transactions-list"></section>
+    </main>
+
+    <main class="screen" id="analytics-screen">
+      <div class="title-row top-gap">
+        <h1>Analytics</h1>
+      </div>
+      <div class="segmented" id="analytics-period">
+        <button class="active" data-period="Week">Week</button>
+        <button data-period="Month">Month</button>
+        <button data-period="Last Month">Last Month</button>
+        <button data-period="YTD">YTD</button>
+      </div>
+
+      <section class="summary-card animate-in" style="--delay:0ms">
+        <div class="summary-cols">
+          <div>
+            <p class="label">Total Income</p>
+            <h2 class="income-text" id="analytics-income">+€0</h2>
+          </div>
+          <div class="divider-vert"></div>
+          <div>
+            <p class="label">Total Expenses</p>
+            <h2 class="expense-text" id="analytics-expenses">−€0</h2>
+          </div>
+        </div>
+        <div class="net-row"><i class="ph ph-trend-up"></i><span id="analytics-net">Net Savings: +€0</span></div>
+      </section>
+
+      <section class="section animate-in" style="--delay:30ms">
+        <div class="section-head">
+          <h2>Spending</h2>
+          <span class="rule-status-badge" id="rule-status-badge">On Track</span>
+        </div>
+        <div id="budget-rule-container"></div>
+      </section>
+
+      <section class="section animate-in" style="--delay:45ms">
+        <h2>Cash Flow</h2>
+        <div class="chart-card" style="margin-top: var(--space-md);">
+          <svg id="cashflow-svg" viewBox="0 0 330 180"></svg>
+          <div class="chart-tooltip" id="cashflow-tooltip"></div>
+        </div>
+      </section>
+
+      <section class="section animate-in" style="--delay:60ms">
+        <div class="section-head">
+          <h2>Spending Trend</h2>
+          <div class="icon-toggle" id="trend-toggle">
+            <button class="active" data-view="line" aria-label="Line chart"><i class="ph ph-chart-line"></i></button>
+            <button data-view="bar" aria-label="Bar chart"><i class="ph ph-chart-bar"></i></button>
+          </div>
+        </div>
+        <div class="chart-card">
+          <svg id="trend-svg" viewBox="0 0 330 180"></svg>
+          <div class="chart-tooltip" id="trend-tooltip"></div>
+        </div>
+      </section>
+
+      <section class="section animate-in" style="--delay:90ms">
+        <h2>By Category</h2>
+        <div class="category-list" id="category-list"></div>
+      </section>
+
+      <section class="section animate-in" style="--delay:110ms">
+        <h2>vs. Last Month</h2>
+        <div class="comparison-list" id="comparison-list"></div>
+      </section>
+
+    </main>
+
+    <main class="screen" id="settings-screen">
+      <div class="title-row top-gap"><h1>Settings</h1></div>
+
+      <section class="settings-card">
+        <h3>Profile</h3>
+        <div class="setting-item-col">
+          <label class="input-label">Display Name</label>
+          <div class="profile-input-row">
+            <input type="text" id="profile-name-input" placeholder="Your Name">
+          </div>
+        </div>
+        <div class="setting-item-col">
+          <label class="input-label">Email</label>
+          <div class="profile-input-row">
+            <input type="email" id="profile-email-input" placeholder="your@email.com">
+          </div>
+        </div>
+        <div class="setting-item" style="border-bottom:none;flex-direction:column;align-items:stretch;padding:var(--space-md) 0">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span>Password</span>
+            <button class="text-btn" id="change-password-btn" style="width:auto;margin-top:0;color:var(--color-accent-needs);font-weight:500">Change</button>
+          </div>
+          <div id="password-change-form" style="display:none;margin-top:var(--space-md)">
+            <input type="password" id="pw-current" placeholder="Current password" class="pw-change-input">
+            <input type="password" id="pw-new" placeholder="New password (min 8 chars)" class="pw-change-input">
+            <input type="password" id="pw-confirm" placeholder="Confirm new password" class="pw-change-input">
+            <p id="pw-change-error" class="error-text" style="margin:var(--space-xs) 0"></p>
+            <button class="primary-btn" id="pw-change-submit" style="min-height:44px;margin-top:var(--space-sm)">Update Password</button>
+          </div>
+        </div>
+        <button class="text-btn danger-btn logout-btn" id="logout-btn">Log Out</button>
+      </section>
+
+      <section class="settings-card">
+        <h3>Budget & Income</h3>
+        <div class="setting-item-col">
+          <label class="input-label">Budget Targets (%)</label>
+          <div class="budget-targets-row">
+            <div class="budget-target-field">
+              <label class="input-label-sm">Needs</label>
+              <input type="number" id="setting-target-needs" min="0" max="100" step="5">
+            </div>
+            <div class="budget-target-field">
+              <label class="input-label-sm">Wants</label>
+              <input type="number" id="setting-target-wants" min="0" max="100" step="5">
+            </div>
+            <div class="budget-target-field">
+              <label class="input-label-sm">Savings</label>
+              <input type="number" id="setting-target-investments" min="0" max="100" step="5" readonly>
+            </div>
+          </div>
+          <div id="budget-total-tracker" class="budget-total-tracker"></div>
+        </div>
+        <div class="setting-item-col">
+          <label class="input-label">
+            On-Track Tolerance
+            <span class="setting-helper-text">How far over budget a category can go before we alert you. (1–20%)</span>
+          </label>
+          <div class="profile-input-row">
+            <input type="number" id="setting-tolerance" placeholder="3" min="1" max="20" step="1">
+            <span class="setting-suffix">%</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-card">
+        <h3>Appearance</h3>
+        <div class="setting-item">
+          <span>Dark Mode</span>
+          <label class="toggle" id="setting-dark-mode" role="switch" aria-label="Toggle dark mode">
+            <input type="checkbox" hidden>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <section class="settings-card">
+        <h3>Preferences</h3>
+        <div class="setting-item">
+          <span>Currency</span>
+          <select id="setting-currency">
+            <option value="USD">USD $</option>
+            <option value="EUR">EUR €</option>
+            <option value="GBP">GBP £</option>
+            <option value="CZK">CZK Kč</option>
+            <option value="PLN">PLN zł</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <span>Notifications</span>
+          <label class="toggle" id="setting-notifications" role="switch" aria-label="Toggle notifications">
+            <input type="checkbox" hidden checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <span>Bank Sync</span>
+          <label class="toggle" id="setting-bank-sync" role="switch" aria-label="Toggle bank sync">
+            <input type="checkbox" hidden checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <span>Default Payment Source</span>
+          <select id="setting-default-account">
+            <option>Revolut</option><option>Cash</option><option>Savings</option><option>Other</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <span>Default Budget Category</span>
+          <select id="setting-default-budget">
+            <option>Needs</option><option>Wants</option><option>Investments</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <span>Data Export</span>
+          <button class="text-btn small" id="export-data-btn">Export</button>
+        </div>
+      </section>
+
+      <section class="settings-card" id="goals-card" style="display:none">
+        <h3>Financial Goals</h3>
+        <div class="setting-item" id="goals-display"><span>Goals</span><strong id="goals-list">—</strong></div>
+        <div class="setting-item"><span>Monthly Income</span><strong id="goals-income">—</strong></div>
+        <div class="setting-item"><span>Quiz Score</span><strong id="goals-quiz">—</strong></div>
+      </section>
+
+      <div class="save-bar">
+        <button class="primary-btn" id="save-changes-btn">Save Changes</button>
+      </div>
+    </main>
+
+    <nav class="tab-bar" id="tab-bar" style="display: none;">
+      <button class="tab active" data-screen="dashboard-screen" aria-label="Home"><i class="ph ph-house"></i><span>Home</span><b></b></button>
+      <button class="tab" data-screen="transactions-screen" aria-label="Transactions"><i class="ph ph-receipt"></i><span>Transactions</span><b></b></button>
+      <div class="fab-slot"></div>
+      <button class="tab" data-screen="analytics-screen" aria-label="Analytics"><i class="ph ph-chart-line-up"></i><span>Analytics</span><b></b></button>
+      <button class="tab" data-screen="settings-screen" aria-label="Settings"><i class="ph ph-gear"></i><span>Settings</span><b></b></button>
+    </nav>
+
+    <button class="fab" id="fab" aria-label="Add transaction" style="display: none;"><i class="ph ph-plus"></i></button>
+    <div class="fab-radial" id="fab-radial">
+      <button class="fab-menu-card" data-action="ai-insight" aria-label="AI Insight">
+        <i class="ph ph-sparkle"></i>
+        <div class="fab-menu-card-text">
+          <span class="fab-menu-card-title">AI Insight</span>
+          <span class="fab-menu-card-desc">Financial score &amp; personalized tips</span>
+        </div>
+      </button>
+      <button class="fab-menu-card" data-action="bank-sync" aria-label="Auto Bank Sync">
+        <i class="ph ph-arrows-clockwise"></i>
+        <div class="fab-menu-card-text">
+          <span class="fab-menu-card-title">Auto Bank Sync</span>
+          <span class="fab-menu-card-desc">Connect your bank account</span>
+        </div>
+      </button>
+    </div>
+
+    <div class="fab-hint" id="fab-hint" style="display: none;">
+      <div class="fab-hint-bubble">Hold the + button for AI insights &amp; bank sync</div>
+      <div class="fab-hint-tail"></div>
+    </div>
+    <div class="fab-overlay" id="fab-overlay" style="display: none;"></div>
+    <div class="overlay" id="overlay"></div>
+
+    <section class="sheet" id="add-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <h2>Add Transaction</h2>
+        <button class="icon-btn" id="close-add" aria-label="Close add transaction"><i class="ph ph-x"></i></button>
+      </div>
+      <div class="segmented" id="tx-type-segment">
+        <button class="active" data-type="Expense">Expense</button>
+        <button data-type="Income">Income</button>
+      </div>
+      <label class="input-label">Amount</label>
+      <div class="amount-input"><span>$</span><input id="tx-amount" type="number" placeholder="0.00"></div>
+      <label class="input-label">Category</label>
+      <div class="chip-row" id="category-chips"></div>
+      <div class="field-stack">
+        <input id="tx-name" type="text" placeholder="Merchant / Description">
+        <input id="tx-datetime" type="datetime-local">
+        <select id="tx-account"><option>Revolut</option><option>Cash</option><option>Savings</option><option>Other</option></select>
+        <select id="tx-budget"><option>Needs</option><option>Wants</option><option>Investments</option></select>
+        <textarea id="tx-notes" placeholder="Add a note or #tag…"></textarea>
+      </div>
+      <p id="save-error" class="error-text" style="margin-top: var(--space-sm);"></p>
+      <button class="primary-btn" id="save-transaction">Save Transaction</button>
+    </section>
+
+    <section class="sheet" id="detail-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <h2>Transaction Details</h2>
+        <button class="icon-btn" id="close-detail" aria-label="Close detail"><i class="ph ph-x"></i></button>
+      </div>
+      <div id="detail-content"></div>
+    </section>
+
+    <section class="sheet" id="filter-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head"><h2>Filters</h2><button class="icon-btn" id="close-filter" aria-label="Close filters"><i class="ph ph-x"></i></button></div>
+      <div class="range-group">
+        <label>Max Amount: <strong id="max-amount-label">€0</strong></label>
+        <input type="range" id="max-amount" min="0" max="5000" value="0">
+      </div>
+      <div class="chip-row" id="filter-categories"></div>
+      <div class="segmented" id="date-filter">
+        <button data-date="Today">Today</button>
+        <button data-date="This Week">This Week</button>
+        <button class="active" data-date="This Month">This Month</button>
+        <button data-date="Custom">Custom Range</button>
+      </div>
+      <button class="primary-btn" id="apply-filters">Apply Filters</button>
+      <button class="text-btn" id="clear-filters">Clear All</button>
+    </section>
+
+    <section class="fullscreen" id="category-detail">
+      <div class="title-row top-gap">
+        <button class="icon-btn" id="close-category-detail" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
+        <h2 id="category-detail-title">Category</h2>
+        <div class="space-box"></div>
+      </div>
+      <div class="chart-card"><svg id="category-mini-chart" viewBox="0 0 330 140"></svg></div>
+      <div class="transactions-list" id="category-detail-list"></div>
+    </section>
+
+    <section class="fullscreen" id="category-picker">
+      <div class="title-row top-gap">
+        <button class="icon-btn" id="close-category-picker" aria-label="Close"><i class="ph ph-x"></i></button>
+        <h2>Choose Category</h2>
+        <div class="space-box"></div>
+      </div>
+      <div class="category-picker-grid" id="category-picker-grid"></div>
+    </section>
+
+    <section class="fullscreen" id="notification-center">
+      <div class="title-row top-gap">
+        <button class="icon-btn" id="close-notification-center" aria-label="Back"><i class="ph ph-arrow-left"></i></button>
+        <h2>Notifications</h2>
+        <button class="icon-btn" id="clear-all-notifications" aria-label="Clear all"><i class="ph ph-trash"></i></button>
+      </div>
+      <div class="notifications-list" id="notifications-list"></div>
+    </section>
+
+    <!-- Onboarding Overlay -->
+    <section class="fullscreen onboarding-screen" id="onboarding-screen">
+
+      <!-- Skip Confirmation -->
+      <div class="skip-confirm" id="skip-confirm" style="display:none">
+        <div class="skip-card">
+          <p>Completing the setup helps us personalize your experience. You can always update your goals and income in Settings later.</p>
+          <div class="skip-actions">
+            <button class="primary-btn" id="skip-close">Continue Setup</button>
+            <button class="text-btn" id="skip-confirm-yes">Skip Anyway</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 0: Welcome -->
+      <div class="onboarding-step active" data-step="0" id="os-0">
+        <div class="os-center">
+          <h1 class="auth-title">Clearr</h1>
+          <p class="os-subtitle">Your journey to financial clarity starts here.</p>
+          <p class="os-body">We'll help you build better money habits, one step at a time. This quick setup takes less than a minute.</p>
+          <button class="primary-btn os-next" data-to="1">Get Started</button>
+          <button class="text-btn" id="os-skip-0" style="margin-top:8px">Skip onboarding</button>
+        </div>
+      </div>
+
+      <!-- Step 1: Income -->
+      <div class="onboarding-step" data-step="1" id="os-1">
+        <div class="os-center os-top">
+          <i class="ph ph-wallet" style="font-size:48px;color:var(--color-accent-wants)"></i>
+          <h2 class="os-heading">What's your monthly income?</h2>
+          <p class="os-hint">Your take-home pay helps us personalize your budget.</p>
+          <div class="amount-input os-amount">
+            <span id="os-currency-sym">€</span>
+            <input type="number" id="os-income" placeholder="0" min="0" step="100">
+          </div>
+          <p class="os-error" id="os-income-error"></p>
+          <button class="primary-btn os-next" data-to="2" id="os-income-next" disabled>Next</button>
+          <button class="text-btn os-skip" data-from="1">Skip</button>
+          <div class="onboarding-dots"><span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        </div>
+      </div>
+
+      <!-- Step 2: Quiz -->
+      <div class="onboarding-step" data-step="2" id="os-2">
+        <div class="os-center os-top">
+          <i class="ph ph-lightbulb" style="font-size:48px;color:var(--color-accent-wants)"></i>
+          <h2 class="os-heading">Quick Financial Literacy Check</h2>
+          <p class="os-hint" id="os-quiz-progress"></p>
+          <div id="os-quiz-container"></div>
+          <button class="primary-btn" id="os-quiz-next" style="display:none">Next</button>
+          <button class="text-btn os-skip" data-from="2">Skip</button>
+          <div class="onboarding-dots"><span class="dot"></span><span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        </div>
+      </div>
+
+      <!-- Step 3: Goals -->
+      <div class="onboarding-step" data-step="3" id="os-3">
+        <div class="os-center os-top">
+          <i class="ph ph-target" style="font-size:48px;color:var(--color-accent-wants)"></i>
+          <h2 class="os-heading">What are your financial goals?</h2>
+          <p class="os-hint">Pick any that matter to you.</p>
+          <div class="os-goals-grid" id="os-goals-grid">
+            <button class="os-goal" data-goal="emergency-fund"><i class="ph ph-shield-check"></i><span>Emergency Fund</span></button>
+            <button class="os-goal" data-goal="pay-debt"><i class="ph ph-currency-circle-dollar"></i><span>Pay Off Debt</span></button>
+            <button class="os-goal" data-goal="save-purchase"><i class="ph ph-house-line"></i><span>Save for Purchase</span></button>
+            <button class="os-goal" data-goal="invest"><i class="ph ph-trend-up"></i><span>Invest</span></button>
+            <button class="os-goal" data-goal="build-wealth"><i class="ph ph-flower-lotus"></i><span>Build Wealth</span></button>
+          </div>
+          <button class="primary-btn os-next" data-to="4" id="os-goals-next" disabled>Next</button>
+          <button class="text-btn os-skip" data-from="3">Skip</button>
+          <div class="onboarding-dots"><span class="dot"></span><span class="dot"></span><span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        </div>
+      </div>
+
+      <!-- Step 4: Commitment -->
+      <div class="onboarding-step" data-step="4" id="os-4">
+        <div class="os-center">
+          <h2 class="os-heading">Make a commitment to yourself</h2>
+          <p class="os-hint">This is your promise to take control of your finances.</p>
+          <div class="commitment-ring-wrap" id="commitment-ring">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="50" fill="none" stroke="var(--color-divider)" stroke-width="6"/>
+              <circle id="commit-fill" cx="60" cy="60" r="50" fill="none" stroke="var(--color-accent-needs)" stroke-width="6" stroke-dasharray="314.159" stroke-dashoffset="314.159" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+            </svg>
+            <div class="commitment-text" id="commitment-text">Hold to<br>Promise</div>
+          </div>
+          <p class="os-hint" id="commitment-status">Hold for 3 seconds</p>
+          <button class="primary-btn os-next" data-to="5" id="os-commit-next" style="display:none">Continue</button>
+        </div>
+      </div>
+
+      <!-- Step 5: Motivation -->
+      <div class="onboarding-step" data-step="5" id="os-5">
+        <div class="os-center os-top">
+          <h2 class="os-heading">See the difference budgeting makes</h2>
+          <div class="os-compare-chart" id="os-compare-chart">
+            <svg viewBox="0 0 280 120">
+              <text x="70" y="16" text-anchor="middle" font-size="11" fill="var(--color-text-secondary)">Without Budget</text>
+              <rect x="30" y="24" width="80" height="60" rx="8" fill="var(--color-expense-red)" opacity="0.7"/>
+              <text x="70" y="108" text-anchor="middle" font-size="14" font-weight="600" fill="var(--color-expense-red)">+20% spent</text>
+
+              <text x="210" y="16" text-anchor="middle" font-size="11" fill="var(--color-text-secondary)">With Clearr</text>
+              <rect x="170" y="44" width="80" height="40" rx="8" fill="var(--color-income-green)" opacity="0.7"/>
+              <text x="210" y="108" text-anchor="middle" font-size="14" font-weight="600" fill="var(--color-income-green)">On track</text>
+            </svg>
+          </div>
+          <p class="os-body" id="os-motivation-text">People without a budget spend up to <strong>20% more</strong> each month. By tracking with Clearr, you're already ahead.</p>
+          <p class="os-body" id="os-motivation-savings" style="font-weight:600;margin-top:4px"></p>
+          <div class="os-tip" id="os-quiz-tip"></div>
+          <button class="primary-btn os-next" data-to="6">Finish</button>
+        </div>
+      </div>
+
+      <!-- Step 6: Done -->
+      <div class="onboarding-step" data-step="6" id="os-6">
+        <div class="os-center">
+          <i class="ph ph-check-circle" style="font-size:64px;color:var(--color-income-green)"></i>
+          <h2 class="os-heading" id="os-done-heading">You're all set!</h2>
+          <div class="os-summary" id="os-summary"></div>
+          <p class="os-body">Your dashboard is ready. Start fresh with a clean slate and build better habits, one day at a time.</p>
+          <button class="primary-btn" id="os-finish">Start Budgeting</button>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="fullscreen" id="ai-insight-screen">
+      <div class="title-row top-gap">
+        <button class="icon-btn" id="close-ai-insight" aria-label="Close"><i class="ph ph-x"></i></button>
+        <h2>AI Insight</h2>
+        <div class="space-box"></div>
+      </div>
+      <div id="ai-insight-content">
+        <div class="ai-score-section">
+          <div class="ai-score-ring">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-divider)" stroke-width="10"/>
+              <circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-accent-needs)" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73" id="ai-score-arc"/>
+            </svg>
+            <div class="ai-score-number" id="ai-score-number">--</div>
+          </div>
+          <div class="ai-score-label">Financial Health Score</div>
+        </div>
+        <div class="ai-insights-list" id="ai-insights-list"></div>
+      </div>
+    </section>
+
+    <!-- Coming Soon Dialog -->
+    <div class="coming-soon-overlay" id="coming-soon-overlay" style="display:none">
+      <div class="coming-soon-card">
+        <i class="ph ph-clock-countdown" style="font-size:48px;color:var(--color-accent-wants)"></i>
+        <h3 id="coming-soon-title">Coming Soon</h3>
+        <p id="coming-soon-body"></p>
+        <button class="primary-btn" id="coming-soon-close">Got it</button>
+      </div>
+    </div>
+
+    <!-- Notification Prompt -->
+    <div class="coming-soon-overlay" id="notification-overlay" style="display:none">
+      <div class="coming-soon-card">
+        <i class="ph ph-bell-ringing" style="font-size:48px;color:var(--color-accent-needs)"></i>
+        <h3>Stay in the know</h3>
+        <p>Get notified of large expenses, budget limits, and weekly summaries.</p>
+        <button class="primary-btn" id="notif-accept">Enable Notifications</button>
+        <button class="text-btn" id="notif-decline" style="margin-top:8px">Not now</button>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+  <script defer src="/script.js"></script>
+</body>
+</html>

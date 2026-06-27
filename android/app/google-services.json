@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "603493128809",
+    "project_id": "clearr-budget-2026",
+    "storage_bucket": "clearr-budget-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:603493128809:android:cd032c8c71e0c85cad60f8",
+        "android_client_info": {
+          "package_name": "com.clearr.budget"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "603493128809-rc0fqts1c0aluf0e498psb1rvn8uo2gl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clearr.budget",
+            "certificate_hash": "b54ec4ad344f5771667dc566957756b0bb0e871a"
+          }
+        },
+        {
+          "client_id": "603493128809-4ca3j173ohles94s4e7e07k7so9vj5nl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQW2FhQWe3S6mUuzSZdEvwu_Kp0qPnQv4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "603493128809-4ca3j173ohles94s4e7e07k7so9vj5nl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

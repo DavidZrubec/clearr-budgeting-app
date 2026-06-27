@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.firebase/
+.firebaserc
+*.local
+.DS_Store
+.obsidian/
+.abacusai/
+.vercel

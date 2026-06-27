@@ -1,0 +1,13 @@
+{
+  "appId": "com.clearr.budget",
+  "appName": "Clearr Budgeting",
+  "webDir": "dist",
+  "plugins": {
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "603493128809-4ca3j173ohles94s4e7e07k7so9vj5nl.apps.googleusercontent.com",
+      "clientId": "603493128809-4ca3j173ohles94s4e7e07k7so9vj5nl.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": true
+    }
+  }
+}
