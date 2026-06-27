@@ -179,7 +179,7 @@
           <div class="mfa-qr-wrap" id="mfa-qr-wrap"><div class="mfa-qr-placeholder" id="mfa-qr-placeholder">Loading QR code...</div></div>
           <p class="mfa-body" id="mfa-secret-text"></p>
           <label class="input-label">Enter the 6-digit code from your app</label>
-          <input type="text" id="mfa-verify-code" class="mfa-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000">
+          <input type="text" id="mfa-verify-code" class="mfa-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" aria-label="Verification code">
           <p id="mfa-enroll-error" class="error-text"></p>
           <button class="primary-btn" id="mfa-verify-enroll-btn">Verify &amp; Activate</button>
           <div id="mfa-recovery" style="display:none">
@@ -191,7 +191,7 @@
         <div id="mfa-challenge" style="display:none">
           <h1 class="mfa-heading">Two-factor authentication</h1>
           <p class="mfa-body">Enter the code from your authenticator app.</p>
-          <input type="text" id="mfa-challenge-code" class="mfa-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000">
+          <input type="text" id="mfa-challenge-code" class="mfa-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" aria-label="Authentication code">
           <p id="mfa-challenge-error" class="error-text"></p>
           <button class="primary-btn" id="mfa-verify-challenge-btn">Verify</button>
         </div>
@@ -483,7 +483,7 @@
     </main>
 
     <nav class="tab-bar" id="tab-bar" style="display: none;">
-      <button class="tab active" data-screen="dashboard-screen" aria-label="Home"><i class="ph ph-house"></i><span>Home</span><b></b></button>
+      <button class="tab active" data-screen="dashboard-screen" aria-label="Home" aria-current="page"><i class="ph ph-house"></i><span>Home</span><b></b></button>
       <button class="tab" data-screen="transactions-screen" aria-label="Transactions"><i class="ph ph-receipt"></i><span>Transactions</span><b></b></button>
       <div class="fab-slot"></div>
       <button class="tab" data-screen="analytics-screen" aria-label="Analytics"><i class="ph ph-chart-line-up"></i><span>Analytics</span><b></b></button>
@@ -657,11 +657,11 @@
           <h2 class="os-heading">What are your financial goals?</h2>
           <p class="os-hint">Pick any that matter to you.</p>
           <div class="os-goals-grid" id="os-goals-grid">
-            <button class="os-goal" data-goal="emergency-fund"><i class="ph ph-shield-check"></i><span>Emergency Fund</span></button>
-            <button class="os-goal" data-goal="pay-debt"><i class="ph ph-currency-circle-dollar"></i><span>Pay Off Debt</span></button>
-            <button class="os-goal" data-goal="save-purchase"><i class="ph ph-house-line"></i><span>Save for Purchase</span></button>
-            <button class="os-goal" data-goal="invest"><i class="ph ph-trend-up"></i><span>Invest</span></button>
-            <button class="os-goal" data-goal="build-wealth"><i class="ph ph-flower-lotus"></i><span>Build Wealth</span></button>
+            <button class="os-goal" data-goal="emergency-fund" aria-pressed="false"><i class="ph ph-shield-check" aria-hidden="true"></i><span>Emergency Fund</span></button>
+            <button class="os-goal" data-goal="pay-debt" aria-pressed="false"><i class="ph ph-currency-circle-dollar" aria-hidden="true"></i><span>Pay Off Debt</span></button>
+            <button class="os-goal" data-goal="save-purchase" aria-pressed="false"><i class="ph ph-house-line" aria-hidden="true"></i><span>Save for Purchase</span></button>
+            <button class="os-goal" data-goal="invest" aria-pressed="false"><i class="ph ph-trend-up" aria-hidden="true"></i><span>Invest</span></button>
+            <button class="os-goal" data-goal="build-wealth" aria-pressed="false"><i class="ph ph-flower-lotus" aria-hidden="true"></i><span>Build Wealth</span></button>
           </div>
           <button class="primary-btn os-next" data-to="4" id="os-goals-next" disabled>Next</button>
           <button class="text-btn os-skip" data-from="3">Skip</button>

@@ -1,8 +1,8 @@
 window.__scriptLoaded = true;
 
-const STORAGE_KEY = 'stationery-budget-v1';
+const STORAGE_KEY = 'clearr-budget-v1';
 
-let isFirestoreReady = false;
+let isDataReady = false;
 let currentUser = null;
 
 function localDateStr(d) {
@@ -556,7 +556,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (sbUnsubTransactions) { sbUnsubTransactions(); sbUnsubTransactions = null; }
     if (sbUnsubPrefs) { sbUnsubPrefs(); sbUnsubPrefs = null; }
 
-    isFirestoreReady = false;
+    isDataReady = false;
 
     // Initial load from Supabase
     sb.loadTransactions(user.uid)
@@ -575,7 +575,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       })
       .catch(() => {})
       .finally(() => {
-        isFirestoreReady = true;
+        isDataReady = true;
         if (transactions.length === 0) {
           checkOnboarding(user);
         } else {
@@ -594,7 +594,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           const idx = transactions.findIndex(t => t.id === data.id);
           if (idx >= 0) { data.group = computeDateGroup(data.date); transactions[idx] = data; }
         } else if (action === 'deleted') {
-          transactions = transactions.filter(t => t.id !== data);
+          const rmIdx = transactions.findIndex(t => t.id === data);
+          if (rmIdx >= 0) transactions.splice(rmIdx, 1);
         }
         fullRender();
       }
@@ -619,7 +620,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (typeof data.holdHintShown === 'boolean') state.holdHintShown = data.holdHintShown;
     saveStorage();
     applyTheme();
-    if (isFirestoreReady) {
+    if (isDataReady) {
       renderGoalsCard();
       fullRender();
     }
@@ -669,7 +670,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       } catch {} // MFA not supported or error — skip
 
-      isFirestoreReady = false;
+      isDataReady = false;
       attachDataListeners(user);
       authScreen.classList.remove('active');
       if (state.activeScreen === 'auth-screen' || !state.activeScreen) {
@@ -679,7 +680,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
       if (sbUnsubTransactions) { sbUnsubTransactions(); sbUnsubTransactions = null; }
       if (sbUnsubPrefs) { sbUnsubPrefs(); sbUnsubPrefs = null; }
-      isFirestoreReady = false;
+      isDataReady = false;
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       if (window._welcomeSeen) {
         authScreen.classList.add('active');
@@ -1027,7 +1028,7 @@ function initSettings() {
     currencyEl.addEventListener('change', () => {
       state.currency = currencyEl.value;
       saveStorage();
-      syncSettingsToFirestore();
+      syncSettingsToSupabase();
       fullRender();
     });
   }
@@ -1045,7 +1046,7 @@ function initSettings() {
       darkModeToggle.classList.toggle('active', state.darkMode);
       applyTheme();
       saveStorage();
-      syncSettingsToFirestore();
+      syncSettingsToSupabase();
     });
   }
 
@@ -1065,7 +1066,7 @@ function initSettings() {
         alerts.forEach(a => state.dismissedAlerts.add(a.id));
       }
       saveStorage();
-      syncSettingsToFirestore();
+      syncSettingsToSupabase();
       renderAlerts();
     });
   }
@@ -1082,7 +1083,7 @@ function initSettings() {
       if (cb) cb.checked = state.bankSync;
       bankSyncToggle.classList.toggle('active', state.bankSync);
       saveStorage();
-      syncSettingsToFirestore();
+      syncSettingsToSupabase();
     });
   }
 
@@ -1166,7 +1167,7 @@ function initSettings() {
     defaultAccountEl.addEventListener('change', () => {
       state.defaultPaymentSource = defaultAccountEl.value;
       saveStorage();
-      syncSettingsToFirestore();
+      syncSettingsToSupabase();
     });
   }
 
@@ -1176,7 +1177,7 @@ function initSettings() {
     defaultBudgetEl.addEventListener('change', () => {
       state.defaultBudgetCategory = defaultBudgetEl.value;
       saveStorage();
-      syncSettingsToFirestore();
+      syncSettingsToSupabase();
     });
   }
 
@@ -1217,7 +1218,7 @@ function initSettings() {
       }
 
       saveStorage();
-      syncSettingsToFirestore();
+      syncSettingsToSupabase();
       fullRender();
 
       saveChangesBtn.textContent = 'Saved!';
@@ -1312,8 +1313,9 @@ function initTabs() {
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       haptic('light');
-      tabs.forEach(t => t.classList.remove('active'));
+      tabs.forEach(t => { t.classList.remove('active'); t.removeAttribute('aria-current'); });
       tab.classList.add('active');
+      tab.setAttribute('aria-current', 'page');
       const target = tab.dataset.screen;
       if (!target) return;
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1871,6 +1873,8 @@ function showToast(message, type) {
     box-shadow: var(--shadow-fab);
   `;
   toast.textContent = message;
+  toast.setAttribute('role', 'alert');
+  toast.setAttribute('aria-live', 'assertive');
   document.getElementById('app').appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
 }
@@ -1972,7 +1976,7 @@ function initFilters() {
   const chipsWrap = document.getElementById('filter-categories');
 
   if (chipsWrap) {
-    chipsWrap.innerHTML = filtersMetaCategories.map(c => `<button class="chip ${c === 'All' ? 'selected' : ''}" data-category="${c}">${c}</button>`).join('');
+    chipsWrap.innerHTML = filtersMetaCategories.map(c => `<button class="chip ${c === 'All' ? 'selected' : ''}" data-category="${c}" aria-pressed="${c === 'All'}">${c}</button>`).join('');
     chipsWrap.querySelectorAll('.chip').forEach(chip => {
       chip.addEventListener('click', () => {
         const cat = chip.dataset.category;
@@ -1985,7 +1989,7 @@ function initFilters() {
           else state.filters.categories.add(cat);
           if (state.filters.categories.size === 0) state.filters.categories.add('All');
         }
-        chipsWrap.querySelectorAll('.chip').forEach(c => c.classList.toggle('selected', state.filters.categories.has(c.dataset.category)));
+        chipsWrap.querySelectorAll('.chip').forEach(c => { c.classList.toggle('selected', state.filters.categories.has(c.dataset.category)); c.setAttribute('aria-pressed', state.filters.categories.has(c.dataset.category)); });
       });
     });
   }
@@ -2082,10 +2086,10 @@ function renderTransactions(customList) {
     const cards = grouped[group].map(tx => {
       const sign = tx.amount >= 0 ? '+' : '−';
       const amountClass = tx.amount >= 0 ? 'income-text' : 'expense-text';
-      const recurringIcon = tx.isRecurring ? ' <i class="ph ph-arrows-clockwise" style="font-size:12px;color:var(--color-accent-needs)"></i>' : '';
+      const recurringIcon = tx.isRecurring ? ' <i class="ph ph-arrows-clockwise" style="font-size:12px;color:var(--color-accent-needs)" aria-hidden="true"></i>' : '';
       return `
-        <article class="tx-card" data-id="${tx.id}">
-          <div class="tx-icon"><i class="ph ${iconForCategory(tx.category)}"></i></div>
+        <article class="tx-card" data-id="${tx.id}" role="button" tabindex="0">
+          <div class="tx-icon"><i class="ph ${iconForCategory(tx.category)}" aria-hidden="true"></i></div>
           <div class="tx-main">
             <strong>${tx.name}${recurringIcon}</strong>
             <small>${tx.merchant} · ${tx.category}</small>
@@ -2102,6 +2106,7 @@ function renderTransactions(customList) {
 
   listEl.querySelectorAll('.tx-card').forEach(card => {
     card.addEventListener('click', () => openTransactionDetail(card.dataset.id));
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTransactionDetail(card.dataset.id); } });
   });
 }
 
@@ -2346,8 +2351,8 @@ function renderAddCategoryChips() {
   const chips = document.getElementById('category-chips');
   if (!chips) return;
   const visible = addCategories.slice(0, 8);
-  chips.innerHTML = visible.map(cat => `<button class="chip ${cat === state.selectedCategory ? 'selected' : ''}" data-category="${cat}">${cat}</button>`).join('') +
-    `<button class="chip" data-category="__picker__">⋮ All</button>`;
+  chips.innerHTML = visible.map(cat => `<button class="chip ${cat === state.selectedCategory ? 'selected' : ''}" data-category="${cat}" aria-pressed="${cat === state.selectedCategory}">${cat}</button>`).join('') +
+    `<button class="chip" data-category="__picker__" aria-label="All categories">⋮ All</button>`;
   chips.querySelectorAll('.chip').forEach(chip => {
     chip.addEventListener('click', () => {
       haptic('light');
@@ -2356,6 +2361,7 @@ function renderAddCategoryChips() {
         return;
       }
       state.selectedCategory = chip.dataset.category || 'Food';
+      chips.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.category === state.selectedCategory));
       renderAddCategoryChips();
     });
   });
@@ -2370,13 +2376,16 @@ function openCategoryPicker() {
   grid.innerHTML = categoryGroups.map(g =>
     `<h4 class="category-group-title">${g.name}</h4>` +
     g.cats.map(cat =>
-      `<button class="category-picker-item ${state.selectedCategory === cat ? 'selected' : ''}" data-category="${cat}"><i class="ph ${iconForCategory(cat)}"></i><span>${cat}</span></button>`
+      `<button class="category-picker-item ${state.selectedCategory === cat ? 'selected' : ''}" data-category="${cat}" aria-pressed="${state.selectedCategory === cat}"><i class="ph ${iconForCategory(cat)}" aria-hidden="true"></i><span>${cat}</span></button>`
     ).join('')
   ).join('');
   grid.querySelectorAll('.category-picker-item').forEach(item => {
     item.addEventListener('click', () => {
       haptic('light');
       state.selectedCategory = item.dataset.category || 'Food';
+      grid.querySelectorAll('.category-picker-item').forEach(el => { el.classList.remove('selected'); el.setAttribute('aria-pressed', 'false'); });
+      item.classList.add('selected');
+      item.setAttribute('aria-pressed', 'true');
       closeCategoryPicker();
       renderAddCategoryChips();
     });
@@ -2889,21 +2898,7 @@ function fullRender() {
   updateAlertBadge();
 }
 
-function seedFirestoreData(user) {
-  const txs = transactions.map(tx => {
-    const { id, group, ...rest } = tx;
-    return rest;
-  });
-  sb.bulkInsertTransactions(user.uid, txs).catch(err => console.error('Seed failed:', err));
-  sb.savePreferences(user.uid, {
-    currency: 'EUR',
-    darkMode: false,
-    notifications: true,
-    bankSync: true
-  }).catch(err => console.error('Seed prefs failed:', err));
-}
-
-function syncSettingsToFirestore() {
+function syncSettingsToSupabase() {
   const user = currentUser;
   if (!user) return;
   sb.savePreferences(user.uid, {
@@ -3099,8 +3094,8 @@ function initOnboardingQuiz() {
     container.innerHTML = `
       <div class="os-quiz-question animate-in" style="--delay:0ms">
         <p>${q.question}</p>
-        <div class="os-quiz-options">
-          ${q.options.map((opt, i) => `<button class="os-quiz-option" data-index="${i}">${opt}</button>`).join('')}
+        <div class="os-quiz-options" role="radiogroup">
+          ${q.options.map((opt, i) => `<button class="os-quiz-option" data-index="${i}" role="radio" aria-checked="false">${opt}</button>`).join('')}
         </div>
       </div>
     `;
@@ -3118,10 +3113,12 @@ function initOnboardingQuiz() {
         // Mark correct/incorrect
         container.querySelectorAll('.os-quiz-option').forEach((el, i) => {
           el.classList.remove('selected');
+          el.setAttribute('aria-checked', 'false');
           if (i === q.correct) el.classList.add('correct');
           if (i === idx && !isCorrect) el.classList.add('incorrect');
         });
         opt.classList.add('selected');
+        opt.setAttribute('aria-checked', 'true');
 
         // Show feedback
         const feedback = document.createElement('div');
@@ -3153,6 +3150,7 @@ function initGoals() {
     btn.addEventListener('click', () => {
       haptic('light');
       btn.classList.toggle('selected');
+      btn.setAttribute('aria-pressed', btn.classList.contains('selected'));
       onboardingData.goals = [...grid.querySelectorAll('.os-goal.selected')].map(el => el.dataset.goal);
       nextBtn.disabled = onboardingData.goals.length === 0;
     });
@@ -3331,7 +3329,7 @@ function finishOnboarding(user) {
   }
   if (onboardingData.goals.length > 0) state.goals = onboardingData.goals;
 
-  syncSettingsToFirestore();
+  syncSettingsToSupabase();
   fullRender();
   setTimeout(() => showNotificationPrompt(user), 500);
 }
